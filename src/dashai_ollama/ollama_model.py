@@ -627,11 +627,11 @@ class OllamaModel(TextToTextGenerationTaskModel):
     SCHEMA = OllamaSchema
     COLOR: str = "#455a64"
     DISPLAY_NAME = MultilingualString(
-        en="Ollama",
-        es="Ollama",
-        pt="Ollama",
-        de="Ollama",
-        zh="Ollama",
+        en="Ollama Model",
+        es="Modelo Ollama",
+        pt="Modelo Ollama",
+        de="Ollama-Modell",
+        zh="Ollama 模型",
     )
     DESCRIPTION = MultilingualString(
         en=(

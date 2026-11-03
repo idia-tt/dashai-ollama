@@ -13,7 +13,7 @@ DashAI.
 
 | Component         | Shown in DashAI as   | Use it for                                                     |
 | ----------------- | -------------------- | -------------------------------------------------------------- |
-| `OllamaModel`     | **Ollama**           | Chat sessions and the generation model of a RAG pipeline       |
+| `OllamaModel`     | **Ollama Model**     | Chat sessions and the generation model of a RAG pipeline       |
 | `OllamaEmbedding` | **Ollama Embedding** | The embedding model of any dense retriever in a RAG pipeline   |
 
 ## Contents
@@ -46,7 +46,7 @@ ollama pull nomic-embed-text
 uv tool install dashai --with dashai-ollama
 dashai
 
-# 4. Open http://localhost:8000, go to Generative, create a session and pick "Ollama"
+# 4. Open http://localhost:8000, go to Generative, create a session and pick "Ollama Model"
 ```
 
 ### 1. Install and start Ollama
@@ -104,7 +104,7 @@ Then open <http://localhost:8000>.
 
 ### 4. Connect it to DashAI
 
-In the DashAI interface go to **Generative**, create a new session, choose **Ollama** and
+In the DashAI interface go to **Generative**, create a new session, choose **Ollama Model** and
 fill in the form. The defaults already point at a local Ollama and at `bonsai-2:9b`, so for a
 first try you can accept them. Details are in [Using the plugin in DashAI](#using-the-plugin-in-dashai).
 
@@ -174,7 +174,7 @@ This starts the server and opens the graphical interface at <http://localhost:80
 ### Chat
 
 1. Open **Generative** and start a new session.
-2. Pick **Ollama** in the model gallery. It needs no download from DashAI: Ollama holds the
+2. Pick **Ollama Model** in the model gallery. It needs no download from DashAI: Ollama holds the
    weights.
 3. Fill in the form (see [Parameters](#parameters)). Hover over the **?** next to each field
    for a short explanation.
@@ -184,7 +184,7 @@ This starts the server and opens the graphical interface at <http://localhost:80
 
 A RAG pipeline has two places where this plugin fits:
 
-- **Generation model:** choose **Ollama**. This is the model that writes the answer.
+- **Generation model:** choose **Ollama Model**. This is the model that writes the answer.
 - **Embedding model:** in a dense retriever, choose **Ollama Embedding** and use an
   embedding model such as `nomic-embed-text`. Chat models do not work as embeddings.
 
@@ -204,7 +204,7 @@ trust.
 
 ## Parameters
 
-The **Ollama** component (`OllamaModel`):
+The **Ollama Model** component (`OllamaModel`):
 
 | Parameter | Default | What it does |
 | --- | --- | --- |
