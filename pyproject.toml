@@ -1,0 +1,23 @@
+[project]
+name = "dashai-ollama"
+version = "0.1.0"
+description = "Ollama text-generation backend (chat and RAG) for DashAI"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Pablo Badilla" }]
+keywords = ["DashAI", "Model"]
+requires-python = ">=3.11"
+# DashAI itself is the host application and is deliberately not a dependency.
+dependencies = ["ollama>=0.6.3"]
+
+[project.urls]
+Homepage = "https://github.com/DashAISoftware/DashAI"
+Issues = "https://github.com/DashAISoftware/DashAI/issues"
+
+[project.entry-points.'dashai.plugins']
+OllamaModel = 'dashai_ollama.ollama_model:OllamaModel'
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
