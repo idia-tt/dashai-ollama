@@ -1,0 +1,63 @@
+name: Compatibility
+
+# Catches breakage that no pull request causes: new releases of our dependencies
+# and of DashAI itself. It also runs on pull requests that change this file or
+# the compat tests, so those changes are validated before they merge.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays, 06:00 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/scheduled.yml"
+      - "tests/compat/**"
+
+concurrency:
+  group: compat-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  latest-deps:
+    name: Latest dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Resolve everything again, ignoring the lock file
+        run: |
+          uv lock --upgrade
+          uv sync
+          uv pip list | grep -iE '^(ollama|httpx|numpy|pydantic) '
+      - run: uv run ty check
+      - run: uv run pytest
+
+  dashai-compat:
+    name: DashAI ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: latest
+            spec: dashai
+          - label: 0.10.x (oldest supported)
+            spec: dashai==0.10.*
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: "3.12"
+      - name: Install DashAI (CPU PyTorch) and this plugin
+        # Take only torch from the PyTorch index. As an extra index it would also
+        # shadow PyPI for packaging and others, and the build backend would fall
+        # back to an old hatchling that cannot read this project.
+        run: |
+          uv venv
+          uv pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          uv pip install "${{ matrix.spec }}" -e . pytest
+          uv pip list | grep -iE '^(dashai|torch|ollama) '
+      - name: Run the tests that need the real DashAI
+        run: .venv/bin/pytest -m dashai -o pythonpath=src -o addopts=""

@@ -19,6 +19,7 @@ DashAI.
 ## Contents
 
 - [Quickstart](#quickstart)
+- [Compatibility](#compatibility)
 - [Installing DashAI](#installing-dashai)
 - [Using the plugin in DashAI](#using-the-plugin-in-dashai)
 - [Parameters](#parameters)
@@ -107,6 +108,27 @@ Then open <http://localhost:8000>.
 In the DashAI interface go to **Generative**, create a new session, choose **Ollama Model** and
 fill in the form. The defaults already point at a local Ollama and at `bonsai-2:9b`, so for a
 first try you can accept them. Details are in [Using the plugin in DashAI](#using-the-plugin-in-dashai).
+
+## Compatibility
+
+| | Supported |
+| --- | --- |
+| **DashAI** | 0.10 or newer. The embedding component needs the RAG module, which DashAI 0.9 does not have. |
+| **Python** | 3.11 to 3.14, tested in CI. |
+| **Ollama** | A recent server with the `/api/chat` and `/api/embed` endpoints. Some models need a newer Ollama than others (`bonsai-2` needs 0.40.6). |
+
+The plugin's own dependencies keep only lower bounds (`ollama>=0.6.3`, `httpx>=0.27`,
+`numpy>=1.26`), and it does not depend on DashAI, PyTorch or anything else DashAI already
+ships. DashAI installs only what its environment is missing, and the copies DashAI ships
+always win, so the plugin adds as little as possible and never pins DashAI's libraries.
+
+Three CI checks keep this true:
+
+- **Minimum dependencies** (every pull request): the tests run with the lowest allowed
+  versions of the dependencies.
+- **Latest dependencies** (weekly): the type check and the tests run without the lock file.
+- **DashAI compatibility** (weekly): installs the real DashAI (the latest release and the
+  oldest supported minor) and runs `tests/compat`.
 
 ## Installing DashAI
 
@@ -364,9 +386,18 @@ CI. `stubs/DashAI/` is a small stand-in for the few DashAI names the plugin impo
 and ty both put it on their path. See [`stubs/README.md`](stubs/README.md). Add to it when the
 plugin starts using a new DashAI name.
 
-Because the stubs are not DashAI, things that depend on the real host are checked by hand:
-registration, the form in the interface, and a full RAG run. To try the plugin against a
-real DashAI, install it editable into the environment that runs DashAI, then start DashAI:
+Because the stubs are not DashAI, `tests/compat` has a few tests that run against the real
+host (registration, the schemas, the embedding being listed as a dense embedding). They are
+deselected by default and run by the weekly compatibility workflow. To run them yourself,
+install the plugin editable into the environment that runs DashAI and run:
+
+```bash
+uv pip install -e /path/to/dashai-ollama pytest   # inside DashAI's environment
+pytest -m dashai -o pythonpath=src -o addopts=""   # from the plugin's directory
+```
+
+The form in the interface and a full RAG run are still checked by hand. To try the plugin in
+a real DashAI, install it editable the same way, then start DashAI:
 
 ```bash
 uv pip install -e /path/to/dashai-ollama   # inside DashAI's environment
