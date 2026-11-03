@@ -1,7 +1,7 @@
 [project]
 name = "dashai-ollama"
-version = "0.1.0"
-description = "Ollama text-generation backend (chat and RAG) for DashAI"
+version = "0.2.0"
+description = "Ollama chat, RAG and embeddings backend for DashAI"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -17,6 +17,7 @@ Issues = "https://github.com/DashAISoftware/DashAI/issues"
 
 [project.entry-points.'dashai.plugins']
 OllamaModel = 'dashai_ollama.ollama_model:OllamaModel'
+OllamaEmbedding = 'dashai_ollama.ollama_embedding:OllamaEmbedding'
 
 [build-system]
 requires = ["hatchling"]
