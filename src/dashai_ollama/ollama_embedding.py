@@ -219,28 +219,52 @@ class OllamaEmbedding(DenseEmbedding):
     )
     DESCRIPTION = MultilingualString(
         en=(
-            "Dense embeddings computed by a local Ollama server. Pull an "
-            "embedding model with `ollama pull nomic-embed-text` and use its "
-            "name in the Model field."
+            "Dense embeddings computed by a local Ollama server, for the "
+            "retriever of a RAG pipeline. Pull an embedding model with `ollama "
+            "pull nomic-embed-text` (more in the [embedding models "
+            "list](https://ollama.com/search?c=embedding)) and type its name in "
+            "the Model field. Chat models do not work here, and if you change "
+            "the model you must build the index again. Source code and full "
+            "documentation: [dashai-ollama on "
+            "GitHub](https://github.com/idia-tt/dashai-ollama)."
         ),
         es=(
-            "Embeddings densos calculados por un servidor Ollama local. "
-            "Descargue un modelo de embeddings con `ollama pull "
-            "nomic-embed-text` y use su nombre en el campo Modelo."
+            "Embeddings densos calculados por un servidor Ollama local, para el "
+            "recuperador de un pipeline RAG. Descargue un modelo de embeddings "
+            "con `ollama pull nomic-embed-text` (más en la [lista de modelos de "
+            "embeddings](https://ollama.com/search?c=embedding)) y escriba su "
+            "nombre en el campo Modelo. Los modelos de chat no sirven aquí, y "
+            "si cambia el modelo debe crear el índice de nuevo. Código fuente y "
+            "documentación completa: [dashai-ollama en "
+            "GitHub](https://github.com/idia-tt/dashai-ollama)."
         ),
         pt=(
-            "Embeddings densos calculados por um servidor Ollama local. Baixe "
-            "um modelo de embeddings com `ollama pull nomic-embed-text` e use "
-            "o nome dele no campo Modelo."
+            "Embeddings densos calculados por um servidor Ollama local, para o "
+            "recuperador de um pipeline RAG. Baixe um modelo de embeddings com "
+            "`ollama pull nomic-embed-text` (mais na [lista de modelos de "
+            "embeddings](https://ollama.com/search?c=embedding)) e digite o "
+            "nome dele no campo Modelo. Modelos de chat não servem aqui, e se "
+            "trocar o modelo é preciso criar o índice novamente. Código-fonte e "
+            "documentação completa: [dashai-ollama no "
+            "GitHub](https://github.com/idia-tt/dashai-ollama)."
         ),
         de=(
-            "Dichte Embeddings, berechnet von einem lokalen Ollama-Server. "
-            "Laden Sie ein Embedding-Modell mit `ollama pull nomic-embed-text` "
-            "und tragen Sie seinen Namen im Feld Modell ein."
+            "Dichte Embeddings, berechnet von einem lokalen Ollama-Server, für "
+            "den Retriever einer RAG-Pipeline. Laden Sie ein Embedding-Modell "
+            "mit `ollama pull nomic-embed-text` (mehr in der [Liste der "
+            "Embedding-Modelle](https://ollama.com/search?c=embedding)) und "
+            "tragen Sie seinen Namen im Feld Modell ein. Chat-Modelle "
+            "funktionieren hier nicht, und bei einem Modellwechsel muss der "
+            "Index neu erstellt werden. Quellcode und vollständige "
+            "Dokumentation: [dashai-ollama auf "
+            "GitHub](https://github.com/idia-tt/dashai-ollama)."
         ),
         zh=(
-            "由本地 Ollama 服务器计算的稠密嵌入。用 "
-            "`ollama pull nomic-embed-text` 下载嵌入模型，并在“模型”字段中填入其名称。"
+            "由本地 Ollama 服务器计算的稠密嵌入，用于 RAG 流水线的检索器。用 `ollam"
+            "a pull nomic-embed-text` 下载嵌入模型（更多见[嵌入模型列表](https://ol"
+            "lama.com/search?c=embedding)），并在“模型”字段中填入其名称。聊天模型在"
+            "此无效，更换模型后需重新创建索引。源代码与完整文档：[GitHub 上的 dasha"
+            "i-ollama](https://github.com/idia-tt/dashai-ollama)。"
         ),
     )
 
