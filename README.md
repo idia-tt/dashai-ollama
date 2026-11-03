@@ -312,8 +312,10 @@ images yet, so that capability is not used by this plugin.
 
 ## Development
 
-You need [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.11 or
-newer (uv installs it for you).
+To change the plugin, work on a branch and open a pull request against `main` (see
+[Conventions](#commits-and-pull-requests)). You need
+[uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.11 or newer (uv
+installs it for you).
 
 ```bash
 git clone https://github.com/pbadillatorrealba-idia/dashai-ollama.git
@@ -416,9 +418,11 @@ and `deps`.
 A breaking change bumps the **major** version. Mark it with `!` after the type
 (`feat(model)!: rename the host field`) or with a `BREAKING CHANGE:` footer.
 
-Open pull requests against `main`. CI checks every commit message and the **PR title**, so
-write the title as a conventional commit too. It becomes the commit message if the PR is
-squash merged. Name branches after the type, for example `feat/keep-alive` or `fix/timeout`.
+**Every change to the plugin goes through a pull request against `main`**: create a branch,
+push it and open a PR. Do not push to `main` directly, because the release job pushes the
+version bump there. CI checks every commit message and the **PR title**, so write the title
+as a conventional commit too. It becomes the commit message if the PR is squash merged. Name
+branches after the type, for example `feat/keep-alive` or `fix/timeout`.
 
 ### Code
 
@@ -447,18 +451,6 @@ On a pull request, CI also posts a preview of the release the PR would produce.
 
 While the version is `0.x`, a breaking change still bumps to `1.0.0`: this project follows
 the rule strictly.
-
-Publishing to PyPI is **not** part of the automation. When you want to publish a release:
-
-```bash
-git checkout v<version>
-uv build
-uv publish --publish-url https://test.pypi.org/legacy/   # try on TestPyPI first
-uv publish                                               # then PyPI
-```
-
-Both need an API token (`UV_PUBLISH_TOKEN`). A version published to PyPI can never be
-reused, even if you delete it, so check it on TestPyPI first.
 
 ## License
 
