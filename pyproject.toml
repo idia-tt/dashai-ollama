@@ -75,7 +75,8 @@ known-third-party = ["DashAI"]
 # Full-width punctuation in the Chinese UI strings is intentional.
 "src/**" = ["RUF001"]
 "tests/**" = ["S101"]
-"stubs/**" = ["N", "RUF012"]
+# The package must be named DashAI to stand in for the host.
+"stubs/**" = ["N999"]
 
 [tool.ruff.format]
 docstring-code-format = true

@@ -426,7 +426,7 @@ branches after the type, for example `feat/keep-alive` or `fix/timeout`.
 
 ### Code
 
-- [ruff](https://docs.astral.sh/ruff/) lints and formats with a broad rule set (see
+- [ruff](https://docs.astral.sh/ruff/) lints and formats with a small core rule set (see
   `pyproject.toml`); [ty](https://docs.astral.sh/ty/) type checks. Both run in the hooks and
   in CI.
 - Use NumPy style docstrings, as DashAI does.
