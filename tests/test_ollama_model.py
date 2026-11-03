@@ -13,7 +13,11 @@ PARAMS = {
     "model": "llama3.2:3b",
     "max_tokens": 64,
     "temperature": 0.2,
+    "top_p": 0.8,
+    "top_k": 20,
     "context_window": 2048,
+    "think": "auto",
+    "keep_alive": "5m",
     "timeout": 5,
 }
 
@@ -57,8 +61,12 @@ def test_generate_sends_chat_request_and_returns_reply(fake_server):
     assert body["options"] == {
         "num_predict": 64,
         "temperature": 0.2,
+        "top_p": 0.8,
+        "top_k": 20,
         "num_ctx": 2048,
     }
+    assert body["keep_alive"] == "5m"
+    assert "think" not in body  # "auto" leaves the model's own default
 
 
 def test_missing_model_raises_runtime_error(fake_server):
@@ -101,3 +109,38 @@ def test_truncated_reasoning_reply_raises(fake_server):
 
     with pytest.raises(RuntimeError, match="max_tokens"):
         OllamaModel(**PARAMS).generate([{"role": "user", "content": "x"}])
+
+
+def _ok(request):
+    return httpx.Response(
+        200,
+        json={"model": "m", "message": {"role": "assistant", "content": "ok"}},
+    )
+
+
+@pytest.mark.parametrize(
+    ("think", "expected"), [("on", True), ("off", False), ("auto", None)]
+)
+def test_think_setting_is_forwarded(fake_server, think, expected):
+    seen, state = fake_server
+    state["handler"] = _ok
+
+    OllamaModel(**{**PARAMS, "think": think}).generate(
+        [{"role": "user", "content": "x"}]
+    )
+
+    assert json.loads(seen[0].content).get("think") is expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "sent"), [("-1", -1), ("0", 0), ("30m", "30m"), ("1h", "1h")]
+)
+def test_keep_alive_numbers_are_sent_as_numbers(fake_server, raw, sent):
+    seen, state = fake_server
+    state["handler"] = _ok
+
+    OllamaModel(**{**PARAMS, "keep_alive": raw}).generate(
+        [{"role": "user", "content": "x"}]
+    )
+
+    assert json.loads(seen[0].content)["keep_alive"] == sent
