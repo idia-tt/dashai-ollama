@@ -40,7 +40,8 @@ dev = [
 testpaths = ["tests"]
 # `stubs` holds a minimal stand-in for the DashAI host (see stubs/README.md).
 pythonpath = ["src", "stubs"]
-addopts = "-ra --strict-markers --cov=dashai_ollama --cov-report=term-missing"
+addopts = "-ra --strict-markers -m 'not dashai' --cov=dashai_ollama --cov-report=term-missing"
+markers = ["dashai: needs a real DashAI install (run by the scheduled compat workflow)"]
 
 [tool.coverage.run]
 branch = true
@@ -81,6 +82,10 @@ known-third-party = ["DashAI"]
 
 [tool.ruff.format]
 docstring-code-format = true
+
+[tool.ty.src]
+# Needs the real DashAI, which the stubs do not cover.
+exclude = ["tests/compat"]
 
 [tool.ty.environment]
 python-version = "3.11"
