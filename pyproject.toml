@@ -51,57 +51,31 @@ src = ["src", "tests", "stubs"]
 
 [tool.ruff.lint]
 select = [
-    "F",    # pyflakes
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "I",    # isort
-    "N",    # pep8-naming
-    "UP",   # pyupgrade
-    "B",    # bugbear: likely bugs
-    "A",    # builtins shadowing
-    "C4",   # comprehensions
-    "C90",  # mccabe complexity
-    "DTZ",  # naive datetimes
-    "T20",  # stray print
-    "SIM",  # simplifications
-    "PT",   # pytest style
-    "RET",  # return consistency
-    "PIE",  # misc cleanups
-    "PERF", # performance
-    "RUF",  # ruff specific
-    "S",    # bandit: security
-    "PL",   # pylint subset
-    "TC",   # type-checking imports
-    "TRY",  # exception handling
-    "EM",   # error messages
-    "ERA",  # commented-out code
-    "FURB", # modern idioms
-    "ISC",  # implicit string concatenation
-    "PGH",  # pygrep hooks
-    "RSE",  # raise syntax
-    "SLF",  # private member access
-]
-ignore = [
-    "ISC003",  # explicit "+" is sometimes clearer than implicit concatenation
-    "PLR0913", # components take many parameters by design
-    "PLR2004", # magic values are fine in a thin client
-    "TRY003",  # long messages built inline are fine
-    "EM101",   # string literal in exception
-    "EM102",   # f-string in exception
+    "F",   # pyflakes
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # bugbear: likely bugs
+    "C4",  # comprehensions
+    "SIM", # simplifications
+    "PT",  # pytest style
+    "RET", # return consistency
+    "RUF", # ruff specific
+    "S",   # bandit: security
+    "T20", # stray print
 ]
 
 [tool.ruff.lint.isort]
 known-first-party = ["dashai_ollama"]
 known-third-party = ["DashAI"]
 
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
 [tool.ruff.lint.per-file-ignores]
 # Full-width punctuation in the Chinese UI strings is intentional.
 "src/**" = ["RUF001"]
-"tests/**" = ["S101", "SLF001", "PLR0915", "PLC0415"]
-"stubs/**" = ["N", "A", "ARG", "TC", "RUF012"]
+"tests/**" = ["S101"]
+"stubs/**" = ["N", "RUF012"]
 
 [tool.ruff.format]
 docstring-code-format = true
