@@ -1,6 +1,6 @@
 # dashai-ollama
 
-[![CI](https://github.com/pbadillatorrealba-idia/dashai-ollama/actions/workflows/ci.yml/badge.svg)](https://github.com/pbadillatorrealba-idia/dashai-ollama/actions/workflows/ci.yml)
+[![CI](https://github.com/idia-tt/dashai-ollama/actions/workflows/ci.yml/badge.svg)](https://github.com/idia-tt/dashai-ollama/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A [DashAI](https://github.com/DashAISoftware/DashAI) plugin that runs **chat**, **RAG** and
@@ -340,7 +340,7 @@ To change the plugin, work on a branch and open a pull request against `main` (s
 installs it for you).
 
 ```bash
-git clone https://github.com/pbadillatorrealba-idia/dashai-ollama.git
+git clone https://github.com/idia-tt/dashai-ollama.git
 cd dashai-ollama
 uv sync                      # creates .venv with the runtime and dev dependencies
 uv run pre-commit install    # installs the git hooks (pre-commit, commit-msg and pre-push)
