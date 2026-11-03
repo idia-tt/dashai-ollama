@@ -8,8 +8,9 @@ license-files = ["LICENSE"]
 authors = [{ name = "Pablo Badilla" }]
 keywords = ["DashAI", "Model"]
 requires-python = ">=3.11"
-# DashAI itself is the host application and is deliberately not a dependency.
-dependencies = ["ollama>=0.6.3"]
+# DashAI is the host application and is deliberately not a dependency; httpx and
+# numpy are listed because they are imported directly (the host already has them).
+dependencies = ["httpx", "numpy", "ollama>=0.6.3"]
 
 [project.urls]
 Homepage = "https://github.com/DashAISoftware/DashAI"
@@ -22,3 +23,89 @@ OllamaEmbedding = 'dashai_ollama.ollama_embedding:OllamaEmbedding'
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.19",
+    "pre-commit>=4",
+    "pydantic>=2",
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ruff>=0.17",
+    "ty>=0.0.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `stubs` holds a minimal stand-in for the DashAI host (see stubs/README.md).
+pythonpath = ["src", "stubs"]
+addopts = "-ra --strict-markers --cov=dashai_ollama --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests", "stubs"]
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # bugbear: likely bugs
+    "A",    # builtins shadowing
+    "C4",   # comprehensions
+    "C90",  # mccabe complexity
+    "DTZ",  # naive datetimes
+    "T20",  # stray print
+    "SIM",  # simplifications
+    "PT",   # pytest style
+    "RET",  # return consistency
+    "PIE",  # misc cleanups
+    "PERF", # performance
+    "RUF",  # ruff specific
+    "S",    # bandit: security
+    "PL",   # pylint subset
+    "TC",   # type-checking imports
+    "TRY",  # exception handling
+    "EM",   # error messages
+    "ERA",  # commented-out code
+    "FURB", # modern idioms
+    "ISC",  # implicit string concatenation
+    "PGH",  # pygrep hooks
+    "RSE",  # raise syntax
+    "SLF",  # private member access
+]
+ignore = [
+    "ISC003",  # explicit "+" is sometimes clearer than implicit concatenation
+    "PLR0913", # components take many parameters by design
+    "PLR2004", # magic values are fine in a thin client
+    "TRY003",  # long messages built inline are fine
+    "EM101",   # string literal in exception
+    "EM102",   # f-string in exception
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["dashai_ollama"]
+known-third-party = ["DashAI"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# Full-width punctuation in the Chinese UI strings is intentional.
+"src/**" = ["RUF001"]
+"tests/**" = ["S101", "SLF001", "PLR0915", "PLC0415"]
+"stubs/**" = ["N", "A", "ARG", "TC", "RUF012"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ty.environment]
+python-version = "3.11"
+extra-paths = ["stubs"]
