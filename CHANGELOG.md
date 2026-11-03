@@ -1,3 +1,9 @@
+## v0.2.2 (2026-11-03)
+
+### Chore
+
+- add IDIA-tt as author, classifiers and project URLs (#5)
+
 ## v0.2.1 (2026-11-03)
 
 ### Chore

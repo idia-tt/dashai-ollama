@@ -1,6 +1,6 @@
 [project]
 name = "dashai-ollama"
-version = "0.2.1"
+version = "0.2.2"
 description = "Ollama chat, RAG and embeddings backend for DashAI"
 readme = "README.md"
 license = "MIT"
