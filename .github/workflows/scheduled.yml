@@ -51,9 +51,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install DashAI (CPU PyTorch) and this plugin
+        # Take only torch from the PyTorch index. As an extra index it would also
+        # shadow PyPI for packaging and others, and the build backend would fall
+        # back to an old hatchling that cannot read this project.
         run: |
           uv venv
-          uv pip install --index https://download.pytorch.org/whl/cpu "${{ matrix.spec }}" -e . pytest
+          uv pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          uv pip install "${{ matrix.spec }}" -e . pytest
           uv pip list | grep -iE '^(dashai|torch|ollama) '
       - name: Run the tests that need the real DashAI
         run: .venv/bin/pytest -m dashai -o pythonpath=src -o addopts=""
