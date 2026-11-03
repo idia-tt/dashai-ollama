@@ -1,10 +1,7 @@
 """Text generation through a local Ollama server."""
 
-from typing import List
-
 import httpx
 import ollama
-
 from DashAI.back.core.schema_fields import (
     BaseSchema,
     enum_field,
@@ -81,7 +78,7 @@ class OllamaSchema(BaseSchema):
             de="Server-URL",
             zh="服务器 URL",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     model: schema_field(
         string_field(),
@@ -125,7 +122,7 @@ class OllamaSchema(BaseSchema):
             de="Modell",
             zh="模型",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     max_tokens: schema_field(
         int_field(ge=1),
@@ -187,7 +184,7 @@ class OllamaSchema(BaseSchema):
             de="Maximale neue Token",
             zh="最大 token 数",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     temperature: schema_field(
         float_field(ge=0.0, le=2.0),
@@ -240,7 +237,7 @@ class OllamaSchema(BaseSchema):
             de="Temperatur",
             zh="温度",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     top_p: schema_field(
         float_field(ge=0.0, le=1.0),
@@ -297,7 +294,7 @@ class OllamaSchema(BaseSchema):
             de="Top P",
             zh="Top P",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     top_k: schema_field(
         int_field(ge=0),
@@ -345,7 +342,7 @@ class OllamaSchema(BaseSchema):
             de="Top K",
             zh="Top K",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     context_window: schema_field(
         int_field(ge=1),
@@ -414,7 +411,7 @@ class OllamaSchema(BaseSchema):
             de="Kontextfenster",
             zh="上下文窗口",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     think: schema_field(
         enum_field(
@@ -509,7 +506,7 @@ class OllamaSchema(BaseSchema):
             de="Denkmodus",
             zh="推理",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     keep_alive: schema_field(
         string_field(),
@@ -569,7 +566,7 @@ class OllamaSchema(BaseSchema):
             de="Geladen halten",
             zh="保持加载",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     timeout: schema_field(
         int_field(ge=1),
@@ -616,7 +613,7 @@ class OllamaSchema(BaseSchema):
             de="Zeitlimit (s)",
             zh="超时（秒）",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
 
 class OllamaModel(TextToTextGenerationTaskModel):
@@ -724,7 +721,7 @@ class OllamaModel(TextToTextGenerationTaskModel):
             host=self.host, timeout=kwargs.get("timeout", DEFAULT_TIMEOUT)
         )
 
-    def generate(self, prompt: list) -> List[str]:
+    def generate(self, prompt: list) -> list[str]:
         """Generate a reply for a conversation.
 
         Parameters

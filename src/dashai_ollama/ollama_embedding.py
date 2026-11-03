@@ -1,11 +1,8 @@
 """Dense embeddings computed by a local Ollama server, for DashAI RAG."""
 
-from typing import List
-
 import httpx
 import numpy as np
 import ollama
-
 from DashAI.back.core.schema_fields import (
     BaseSchema,
     int_field,
@@ -60,7 +57,7 @@ class OllamaEmbeddingSchema(BaseSchema):
             de="Server-URL",
             zh="服务器 URL",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     model: schema_field(
         string_field(),
@@ -116,7 +113,7 @@ class OllamaEmbeddingSchema(BaseSchema):
             de="Modell",
             zh="模型",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     batch_size: schema_field(
         int_field(ge=1),
@@ -164,7 +161,7 @@ class OllamaEmbeddingSchema(BaseSchema):
             de="Batch-Größe",
             zh="批大小",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
     timeout: schema_field(
         int_field(ge=1),
@@ -202,7 +199,7 @@ class OllamaEmbeddingSchema(BaseSchema):
             de="Zeitlimit (s)",
             zh="超时（秒）",
         ),
-    )  # type: ignore
+    )  # ty: ignore[invalid-type-form]
 
 
 class OllamaEmbedding(DenseEmbedding):
@@ -213,14 +210,14 @@ class OllamaEmbedding(DenseEmbedding):
     """
 
     SCHEMA = OllamaEmbeddingSchema
-    DISPLAY_NAME: str = MultilingualString(
+    DISPLAY_NAME = MultilingualString(
         en="Ollama Embedding",
         es="Embedding Ollama",
         pt="Embedding Ollama",
         de="Ollama-Embedding",
         zh="Ollama 嵌入",
     )
-    DESCRIPTION: str = MultilingualString(
+    DESCRIPTION = MultilingualString(
         en=(
             "Dense embeddings computed by a local Ollama server. Pull an "
             "embedding model with `ollama pull nomic-embed-text` and use its "
@@ -272,7 +269,7 @@ class OllamaEmbedding(DenseEmbedding):
         """Embed one text; returns a float32 vector of shape ``(dim,)``."""
         return self._embed([text])[0]
 
-    def batch_encode(self, texts: List[str]) -> np.ndarray:
+    def batch_encode(self, texts: list[str]) -> np.ndarray:
         """Embed many texts; returns a float32 array of shape ``(n, dim)``."""
         batches = [
             self._embed(texts[i : i + self.batch_size])
@@ -286,7 +283,7 @@ class OllamaEmbedding(DenseEmbedding):
     def train(self, **kwargs):
         """No-op. Embeddings are computed by a pretrained model."""
 
-    def _embed(self, texts: List[str]) -> np.ndarray:
+    def _embed(self, texts: list[str]) -> np.ndarray:
         try:
             response = self.client.embed(model=self.model_name, input=texts)
         except self._error_types as e:
