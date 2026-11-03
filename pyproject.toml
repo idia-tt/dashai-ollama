@@ -1,8 +1,8 @@
 [project]
 name = "dashai-ollama"
 version = "0.2.1"
-description = "Ollama chat, RAG and embeddings backend for DashAI"
-readme = "README.md"
+description = "Chat, RAG and embeddings with models served by a local Ollama server"
+readme = "PLUGIN.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Pablo Badilla" }]
