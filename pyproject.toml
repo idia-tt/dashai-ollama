@@ -5,8 +5,24 @@ description = "Ollama chat, RAG and embeddings backend for DashAI"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "Pablo Badilla" }]
-keywords = ["DashAI", "Model"]
+authors = [{ name = "Pablo Badilla" }, { name = "IDIA-tt" }]
+# DashAI reads the PyPI keywords as plugin tags and keeps only the ones it knows
+# (DashAI, Package, Task, Model, Metric, Dataloader, Converter, Explainer); the
+# rest are for PyPI search.
+keywords = ["DashAI", "Model", "Ollama", "LLM", "RAG", "Embeddings"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Plugins",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 requires-python = ">=3.11"
 # DashAI is the host application and is deliberately not a dependency. httpx and
 # numpy are listed because they are imported directly, with only a lower bound:
@@ -14,8 +30,10 @@ requires-python = ">=3.11"
 dependencies = ["httpx>=0.27", "numpy>=1.26", "ollama>=0.6.3"]
 
 [project.urls]
-Homepage = "https://github.com/DashAISoftware/DashAI"
-Issues = "https://github.com/DashAISoftware/DashAI/issues"
+Homepage = "https://github.com/pbadillatorrealba-idia/dashai-ollama"
+Changelog = "https://github.com/pbadillatorrealba-idia/dashai-ollama/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pbadillatorrealba-idia/dashai-ollama/issues"
+DashAI = "https://github.com/DashAISoftware/DashAI"
 
 [project.entry-points.'dashai.plugins']
 OllamaModel = 'dashai_ollama.ollama_model:OllamaModel'
