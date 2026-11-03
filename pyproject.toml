@@ -8,9 +8,10 @@ license-files = ["LICENSE"]
 authors = [{ name = "Pablo Badilla" }]
 keywords = ["DashAI", "Model"]
 requires-python = ">=3.11"
-# DashAI is the host application and is deliberately not a dependency; httpx and
-# numpy are listed because they are imported directly (the host already has them).
-dependencies = ["httpx", "numpy", "ollama>=0.6.3"]
+# DashAI is the host application and is deliberately not a dependency. httpx and
+# numpy are listed because they are imported directly, with only a lower bound:
+# the host's copies win, and the min-deps CI job checks that these bounds hold.
+dependencies = ["httpx>=0.27", "numpy>=1.26", "ollama>=0.6.3"]
 
 [project.urls]
 Homepage = "https://github.com/DashAISoftware/DashAI"
