@@ -22,11 +22,15 @@ PARAMS = {
 }
 
 
+def _unset(request):
+    raise AssertionError('the test must set state["handler"]')
+
+
 @pytest.fixture
 def fake_server(monkeypatch):
     """Route ollama.Client through an in-memory handler; yields captured requests."""
     seen = []
-    state = {"handler": None}
+    state = {"handler": _unset}
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
@@ -73,7 +77,7 @@ def test_missing_model_raises_runtime_error(fake_server):
     _, state = fake_server
     state["handler"] = lambda r: httpx.Response(404, json={"error": "not found"})
 
-    with pytest.raises(RuntimeError, match="llama3.2:3b"):
+    with pytest.raises(RuntimeError, match=r"llama3\.2:3b"):
         OllamaModel(**PARAMS).generate([{"role": "user", "content": "x"}])
 
 
@@ -85,7 +89,7 @@ def test_unreachable_server_raises_runtime_error(fake_server):
 
     state["handler"] = refuse
 
-    with pytest.raises(RuntimeError, match="ollama.test"):
+    with pytest.raises(RuntimeError, match=r"ollama\.test"):
         OllamaModel(**PARAMS).generate([{"role": "user", "content": "x"}])
 
 
@@ -107,7 +111,7 @@ def test_truncated_reasoning_reply_raises(fake_server):
         },
     )
 
-    with pytest.raises(RuntimeError, match="max_tokens"):
+    with pytest.raises(RuntimeError, match=r"max_tokens"):
         OllamaModel(**PARAMS).generate([{"role": "user", "content": "x"}])
 
 

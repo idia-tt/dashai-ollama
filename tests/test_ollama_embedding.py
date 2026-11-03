@@ -85,7 +85,7 @@ def test_unreachable_server_raises_runtime_error(monkeypatch):
         lambda **kw: real_client(transport=httpx.MockTransport(refuse), **kw),
     )
 
-    with pytest.raises(RuntimeError, match="ollama.test"):
+    with pytest.raises(RuntimeError, match=r"ollama\.test"):
         OllamaEmbedding(**PARAMS).load()
 
 
@@ -102,5 +102,5 @@ def test_missing_model_raises_runtime_error(monkeypatch):
         ),
     )
 
-    with pytest.raises(RuntimeError, match="nomic-embed-text"):
+    with pytest.raises(RuntimeError, match=r"nomic-embed-text"):
         OllamaEmbedding(**PARAMS).load()

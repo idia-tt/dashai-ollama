@@ -8,8 +8,9 @@ license-files = ["LICENSE"]
 authors = [{ name = "Pablo Badilla" }]
 keywords = ["DashAI", "Model"]
 requires-python = ">=3.11"
-# DashAI itself is the host application and is deliberately not a dependency.
-dependencies = ["ollama>=0.6.3"]
+# DashAI is the host application and is deliberately not a dependency; httpx and
+# numpy are listed because they are imported directly (the host already has them).
+dependencies = ["httpx", "numpy", "ollama>=0.6.3"]
 
 [project.urls]
 Homepage = "https://github.com/DashAISoftware/DashAI"
@@ -22,3 +23,161 @@ OllamaEmbedding = 'dashai_ollama.ollama_embedding:OllamaEmbedding'
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.19",
+    "pre-commit>=4",
+    "pydantic>=2",
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ruff>=0.17",
+    "ty>=0.0.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `stubs` holds a minimal stand-in for the DashAI host (see stubs/README.md).
+pythonpath = ["src", "stubs"]
+addopts = "-ra --strict-markers --cov=dashai_ollama --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests", "stubs"]
+
+[tool.ruff.lint]
+select = [
+    "F",   # pyflakes
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # bugbear: likely bugs
+    "C4",  # comprehensions
+    "SIM", # simplifications
+    "PT",  # pytest style
+    "RET", # return consistency
+    "RUF", # ruff specific
+    "S",   # bandit: security
+    "T20", # stray print
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["dashai_ollama"]
+known-third-party = ["DashAI"]
+
+[tool.ruff.lint.per-file-ignores]
+# Full-width punctuation in the Chinese UI strings is intentional.
+"src/**" = ["RUF001"]
+"tests/**" = ["S101"]
+# The package must be named DashAI to stand in for the host.
+"stubs/**" = ["N999"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ty.environment]
+python-version = "3.11"
+extra-paths = ["stubs"]
+
+[tool.commitizen]
+name = "cz_customize"
+version_provider = "uv"
+tag_format = "v$version"
+annotated_tag = true
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+bump_message = "bump: version $current_version → $new_version"
+
+# Conventional Commits, with a bump policy of our own: every type that changes
+# the shipped package releases a version (feat and perf minor, the rest patch,
+# a breaking change major). docs, test and ci do not release because they leave
+# the distributed code untouched. This needs cz_customize: the stock
+# cz_conventional_commits plugin hard-codes its own bump map.
+[tool.commitizen.customize]
+message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}{% if body %}\n\n{{body}}{% endif %}{% if is_breaking_change %}\n\nBREAKING CHANGE: {{breaking_description}}{% endif %}"
+example = "feat(model): add the think parameter"
+schema = "<type>(<scope>): <subject>"
+schema_pattern = '(?s)^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test|bump)(\([\w\-\./]+\))?!?: [^\n\r]+((\n\n.*)|(\s*))?$'
+bump_pattern = '^((BREAKING[\- ]CHANGE|feat|fix|perf|refactor|style|chore|build)(\(.+\))?(!)?)'
+commit_parser = '^((?P<change_type>feat|fix|perf|refactor|style|chore|build|BREAKING CHANGE)(?:\((?P<scope>[^()\r\n]*)\)|\()?(?P<breaking>!)?):\s(?P<message>.*)?'
+changelog_pattern = '^((BREAKING[\- ]CHANGE|feat|fix|perf|refactor|style|chore|build)(\(.+\))?(!)?)'
+change_type_order = [
+    "BREAKING CHANGE",
+    "Feat",
+    "Fix",
+    "Perf",
+    "Refactor",
+    "Style",
+    "Build",
+    "Chore",
+]
+
+[tool.commitizen.customize.bump_map]
+'^.+!$' = "MAJOR"
+'^BREAKING[\- ]CHANGE' = "MAJOR"
+'^feat' = "MINOR"
+'^perf' = "MINOR"
+'^fix' = "PATCH"
+'^refactor' = "PATCH"
+'^style' = "PATCH"
+'^chore' = "PATCH"
+'^build' = "PATCH"
+
+[tool.commitizen.customize.change_type_map]
+feat = "Feat"
+fix = "Fix"
+perf = "Perf"
+refactor = "Refactor"
+style = "Style"
+build = "Build"
+chore = "Chore"
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+message = "Select the type of change you are committing"
+choices = [
+    { value = "feat", name = "feat: a new feature (minor)" },
+    { value = "fix", name = "fix: a bug fix (patch)" },
+    { value = "perf", name = "perf: a performance improvement (minor)" },
+    { value = "refactor", name = "refactor: a code change that is neither (patch)" },
+    { value = "style", name = "style: formatting or lint, no behavior change (patch)" },
+    { value = "chore", name = "chore: maintenance of the code or dependencies (patch)" },
+    { value = "build", name = "build: packaging or build configuration (patch)" },
+    { value = "docs", name = "docs: documentation only (no release)" },
+    { value = "test", name = "test: tests only (no release)" },
+    { value = "ci", name = "ci: CI configuration only (no release)" },
+    { value = "revert", name = "revert: revert a previous commit (no release)" },
+]
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "scope"
+message = "Scope (optional, for example model or embedding):"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "message"
+message = "Subject, in the imperative mood:"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "body"
+message = "Body (optional):"
+
+[[tool.commitizen.customize.questions]]
+type = "confirm"
+name = "is_breaking_change"
+message = "Is this a BREAKING CHANGE (major)?"
+default = false
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "breaking_description"
+message = "Describe the breaking change:"

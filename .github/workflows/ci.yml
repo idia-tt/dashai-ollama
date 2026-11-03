@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  commits:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Check every commit of the PR
+        run: |
+          uvx --from commitizen cz check \
+            --rev-range "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+      - name: Check the PR title (it becomes the commit on a squash merge)
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: uvx --from commitizen cz check --message "$PR_TITLE"
+      - name: Preview the release this PR would produce
+        run: |
+          set +e
+          out=$(uvx --from commitizen cz bump --dry-run 2>&1)
+          rc=$?
+          {
+            echo "### Release preview"
+            if [ "$rc" -eq 0 ]; then
+              echo "Merging this PR would release: \`$(echo "$out" | grep -m1 '^tag to create')\`"
+            else
+              echo "Merging this PR would not release a new version (only docs, test or ci changes)."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$out"
+          exit 0
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync
+      - run: uv lock --check
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  typecheck:
+    name: Type check (ty)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync
+      - run: uv run ty check
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync
+      - run: uv run pytest
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      - run: uv build
+      - name: Check the metadata and the plugin entry points
+        run: |
+          uvx twine check dist/*
+          unzip -p dist/*.whl '*/entry_points.txt' | tee /dev/stderr | grep -q 'dashai.plugins'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  release:
+    name: Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, typecheck, test, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Bump the version from the conventional commits
+        id: bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          set +e
+          uvx --from commitizen cz bump --yes
+          rc=$?
+          set -e
+          # 21: nothing to release (only docs, test or ci); 3: no commits since the tag
+          if [ "$rc" -eq 21 ] || [ "$rc" -eq 3 ]; then
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "No release needed."
+            exit 0
+          fi
+          [ "$rc" -eq 0 ] || exit "$rc"
+          tag=$(git describe --tags --abbrev=0)
+          echo "released=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Push the bump commit and the tag
+        if: steps.bump.outputs.released == 'true'
+        run: git push origin HEAD:main --follow-tags
+      - name: Build the distributions
+        if: steps.bump.outputs.released == 'true'
+        run: uv build
+      - name: Create the GitHub release
+        if: steps.bump.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          uvx --from commitizen cz changelog "${TAG#v}" --dry-run > notes.md
+          gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md
