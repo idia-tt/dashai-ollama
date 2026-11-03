@@ -1,3 +1,9 @@
+## v0.2.3 (2026-11-03)
+
+### Fix
+
+- improve component descriptions and link the repository (#7)
+
 ## v0.2.2 (2026-11-03)
 
 ### Chore
