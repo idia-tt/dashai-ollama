@@ -61,3 +61,51 @@ def test_default_parameters_build_the_component(registry, name):
 
     # Building the client makes no network call, so no server is needed.
     component(**defaults)
+
+
+def test_typed_generation_works_on_hosts_that_have_it():
+    """``generate_text`` calls ``generate_result`` once and keeps reasoning."""
+    generation = pytest.importorskip(
+        "DashAI.back.core.generation",
+        reason="This DashAI predates the typed text-generation interface.",
+    )
+    import httpx
+    import ollama
+
+    from dashai_ollama.ollama_model import OllamaModel
+
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "model": "m",
+                "message": {"role": "assistant", "content": "A", "thinking": "T"},
+                "done_reason": "stop",
+                "prompt_eval_count": 3,
+                "eval_count": 4,
+            },
+        )
+
+    real_client = ollama.Client
+    ollama.Client = lambda **kw: real_client(
+        transport=httpx.MockTransport(handler), **kw
+    )
+    try:
+        defaults = {
+            k: v["placeholder"]
+            for k, v in OllamaModel.get_schema()["properties"].items()
+        }
+        model = OllamaModel(**defaults)
+    finally:
+        ollama.Client = real_client
+
+    result = generation.generate_text(model, [{"role": "user", "content": "x"}])
+
+    assert len(calls) == 1
+    assert result.text == "A"
+    assert [p.type for p in result.parts] == ["reasoning", "text"]
+    assert result.usage.total_tokens == 7
+    assert result.finish_reason == "stop"

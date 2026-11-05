@@ -148,3 +148,79 @@ def test_keep_alive_numbers_are_sent_as_numbers(fake_server, raw, sent):
     )
 
     assert json.loads(seen[0].content)["keep_alive"] == sent
+
+
+def _reply(**extra):
+    return lambda r: httpx.Response(
+        200,
+        json={
+            "model": "llama3.2:3b",
+            "message": {"role": "assistant", **extra.pop("message")},
+            **extra,
+        },
+    )
+
+
+def test_generate_result_keeps_reasoning_usage_and_finish_reason(fake_server):
+    from DashAI.back.core.generation import (
+        GenerationRequest,
+        ReasoningPart,
+        TextPart,
+    )
+
+    seen, state = fake_server
+    state["handler"] = _reply(
+        message={"content": "A tree.", "thinking": "Short answer."},
+        done_reason="stop",
+        prompt_eval_count=12,
+        eval_count=30,
+        eval_duration=2_000_000_000,
+        load_duration=500_000_000,
+    )
+    messages = [{"role": "user", "content": "What is a bonsai?"}]
+
+    result = OllamaModel(**PARAMS).generate_result(GenerationRequest(messages))
+
+    assert len(seen) == 1  # one server request, never one per method
+    assert json.loads(seen[0].content)["messages"] == messages
+    assert result.parts == [
+        ReasoningPart(text="Short answer."),
+        TextPart(text="A tree."),
+    ]
+    assert result.text == "A tree."
+    assert result.finish_reason == "stop"
+    assert result.usage.prompt_tokens == 12
+    assert result.usage.completion_tokens == 30
+    assert result.usage.total_tokens == 42
+    assert result.usage.generation_seconds == 2.0
+    assert result.usage.load_seconds == 0.5
+
+
+def test_generate_result_without_thinking_or_usage_leaves_them_absent(fake_server):
+    from DashAI.back.core.generation import GenerationRequest, TextPart
+
+    _, state = fake_server
+    state["handler"] = _reply(message={"content": "hi"})
+
+    result = OllamaModel(**PARAMS).generate_result(
+        GenerationRequest([{"role": "user", "content": "hello"}])
+    )
+
+    assert result.parts == [TextPart(text="hi")]
+    assert result.finish_reason is None
+    assert result.usage.total_tokens is None
+    assert result.usage.generation_seconds is None
+
+
+def test_generate_result_reports_truncated_reasoning_like_generate(fake_server):
+    from DashAI.back.core.generation import GenerationRequest
+
+    _, state = fake_server
+    state["handler"] = _reply(
+        message={"content": "", "thinking": "hmm"}, done_reason="length"
+    )
+
+    with pytest.raises(RuntimeError, match="max_tokens"):
+        OllamaModel(**PARAMS).generate_result(
+            GenerationRequest([{"role": "user", "content": "x"}])
+        )

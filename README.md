@@ -117,6 +117,15 @@ first try you can accept them. Details are in [Using the plugin in DashAI](#usin
 | **Python** | 3.11 to 3.14, tested in CI. |
 | **Ollama** | A recent server with the `/api/chat` and `/api/embed` endpoints. Some models need a newer Ollama than others (`bonsai-2` needs 0.40.6). |
 
+### Reasoning, token usage and finish reason
+
+On DashAI versions that include the typed text-generation interface
+(`DashAI.back.core.generation`), `OllamaModel` also implements `generate_result`. It makes
+the same single request to Ollama and returns the model's thinking as a separate reasoning
+part, the answer text, token counts and durations (when Ollama reports them) and Ollama's
+`done_reason` as the finish reason. Older DashAI versions ignore it and keep using
+`generate`, so nothing changes for them, and chat still stores only the answer.
+
 The plugin's own dependencies keep only lower bounds (`ollama>=0.6.3`, `httpx>=0.27`,
 `numpy>=1.26`), and it does not depend on DashAI, PyTorch or anything else DashAI already
 ships. DashAI installs only what its environment is missing, and the copies DashAI ships

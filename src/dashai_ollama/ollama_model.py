@@ -723,8 +723,43 @@ class OllamaModel(TextToTextGenerationTaskModel):
             host=self.host, timeout=kwargs.get("timeout", DEFAULT_TIMEOUT)
         )
 
+    def _chat(self, prompt: list):
+        """Send one chat request and return Ollama's response.
+
+        Both ``generate`` and ``generate_result`` use this method, so each call
+        makes exactly one request to the server.
+        """
+        try:
+            response = self.client.chat(
+                model=self.model_name,
+                messages=prompt,
+                options=self.options,
+                think=self.think,
+                keep_alive=self.keep_alive,
+            )
+        except self._error_types as e:
+            raise RuntimeError(
+                f"Ollama request to {self.host} failed for model "
+                f"'{self.model_name}': {e}. Is the server running and the model "
+                "pulled?"
+            ) from e
+        if (
+            not response["message"]["content"]
+            and response.get("done_reason") == "length"
+        ):
+            # Reasoning models spend max_tokens on hidden thinking first.
+            raise RuntimeError(
+                f"Model '{self.model_name}' hit max_tokens "
+                f"({self.options['num_predict']}) before producing an answer. "
+                "Reasoning models need a larger max_tokens."
+            )
+        return response
+
     def generate(self, prompt: list) -> list[str]:
         """Generate a reply for a conversation.
+
+        This is the plain-text method every DashAI version calls. Hosts that
+        know the typed interface call :meth:`generate_result` instead.
 
         Parameters
         ----------
@@ -741,28 +776,69 @@ class OllamaModel(TextToTextGenerationTaskModel):
         ------
         RuntimeError
             If the server is unreachable or rejects the request (for example,
-            because the model was not pulled).
+            because the model was not pulled) or if max_tokens was spent
+            before any answer text.
         """
-        try:
-            response = self.client.chat(
-                model=self.model_name,
-                messages=prompt,
-                options=self.options,
-                think=self.think,
-                keep_alive=self.keep_alive,
-            )
-        except self._error_types as e:
-            raise RuntimeError(
-                f"Ollama request to {self.host} failed for model "
-                f"'{self.model_name}': {e}. Is the server running and the model "
-                "pulled?"
-            ) from e
-        content = response["message"]["content"]
-        if not content and response.get("done_reason") == "length":
-            # Reasoning models spend max_tokens on hidden thinking first.
-            raise RuntimeError(
-                f"Model '{self.model_name}' hit max_tokens "
-                f"({self.options['num_predict']}) before producing an answer. "
-                "Reasoning models need a larger max_tokens."
-            )
-        return [content]
+        return [self._chat(prompt)["message"]["content"]]
+
+    def generate_result(self, request):
+        """Generate a reply with its reasoning, usage and finish reason.
+
+        Used by DashAI versions that provide
+        ``DashAI.back.core.generation``; older versions never call it and keep
+        using :meth:`generate`.
+
+        Parameters
+        ----------
+        request : GenerationRequest
+            The conversation, converted with ``request.to_messages()``.
+
+        Returns
+        -------
+        GenerationResult
+            The reply text, a separate reasoning part when the model thought
+            (``message.thinking``), token counts and durations in seconds when
+            Ollama reports them, and Ollama's ``done_reason`` as the finish
+            reason.
+
+        Raises
+        ------
+        RuntimeError
+            Same conditions as :meth:`generate`.
+        """
+        # Imported here so the plugin still imports on DashAI versions that
+        # do not have these types.
+        from DashAI.back.core.generation import (
+            GenerationResult,
+            GenerationUsage,
+            ReasoningPart,
+            TextPart,
+        )
+
+        response = self._chat(request.to_messages())
+        message = response["message"]
+        parts = []
+        if message.get("thinking"):
+            parts.append(ReasoningPart(text=message["thinking"]))
+        parts.append(TextPart(text=message["content"]))
+
+        def seconds(name):
+            value = response.get(name)
+            return None if value is None else value / 1e9
+
+        prompt_tokens = response.get("prompt_eval_count")
+        completion_tokens = response.get("eval_count")
+        usage = GenerationUsage(
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=(
+                prompt_tokens + completion_tokens
+                if prompt_tokens is not None and completion_tokens is not None
+                else None
+            ),
+            generation_seconds=seconds("eval_duration"),
+            load_seconds=seconds("load_duration"),
+        )
+        return GenerationResult(
+            parts=parts, usage=usage, finish_reason=response.get("done_reason")
+        )
